@@ -71,11 +71,6 @@ export function checkOwnership(actor: any, userId: string): boolean {
     return actor.ownership[id] === 3 && id !== "default" && user && !user.isGM;
   });
 
-  const onlinePlayerOwner = playerOwners.find((id) => {
-    const user = game.users.find((u: any) => u.id === id);
-    return user && user.active;
-  });
-
   if (playerOwners.length > 0) {
     const currentUser = game.users.find((u: any) => u.id === userId);
     return playerOwners.includes(userId) || (currentUser && currentUser.isGM);

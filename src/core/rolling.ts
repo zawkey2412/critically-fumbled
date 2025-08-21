@@ -1,13 +1,17 @@
-import { MODULE_ID } from '../config/settings.js';
-import { getColors, createMessage, createResult } from '../ui/renderer.js';
-import { analyzeRoll, checkButtonPermission } from './engine.js';
+import { MODULE_ID } from "../config/settings.js";
+import { getColors, createMessage, createResult } from "../ui/renderer.js";
+import { analyzeRoll, checkButtonPermission } from "./engine.js";
+import { showDiceAnimation, isDiceSoNiceAvailable } from "./dice-so-nice.js";
 
-async function executeTableRoll(roll: Roll, table: RollTable, target: HTMLElement, tempMessage: any): Promise<void> {
+async function executeTableRoll(
+  roll: Roll,
+  table: RollTable,
+  target: HTMLElement,
+  tempMessage: any
+): Promise<void> {
   try {
     if (tempMessage) await tempMessage.delete();
-  } catch (error) {
-    console.warn(`[${MODULE_ID}] Failed to delete temp message:`, error);
-  }
+  } catch (error) {}
 
   const rolledValue = roll.total;
   if (!rolledValue) {
@@ -25,23 +29,37 @@ async function executeTableRoll(roll: Roll, table: RollTable, target: HTMLElemen
     return;
   }
 
-  const chatMessage = target.closest(".message");
-  const messageId = (chatMessage as HTMLElement)?.dataset?.messageId;
-  const message = (game as any).messages?.get(messageId);
+  const chatMessage = target.closest(".message") as HTMLElement;
+  const messageId = chatMessage?.dataset?.messageId;
 
+  if (!messageId) {
+    ui.notifications.error("Could not find message ID");
+    return;
+  }
+
+  const message = (game as any).messages?.get(messageId);
   if (!message) {
     ui.notifications.error("Could not find original message");
     return;
   }
 
-  const isCrit = message.content.includes("critically succeeded") || message.content.includes("critically hit");
+  const isCrit = message.content.includes("#4CAF50");
   const colors = getColors(isCrit);
   const titleMatch = message.content.match(/<h4[^>]*>([^<]+)<\/h4>/);
-  const title = (titleMatch?.[1] || "Roll Result").replace(/[<>"'&]/g, '');
-  const resultText = (tableResult.text || tableResult.getChatText() || '').toString();
+  const title = (titleMatch?.[1] || "Roll Result").replace(/[<>"'&]/g, "");
+  const resultText = (
+    tableResult.description ||
+    tableResult.name ||
+    tableResult.getChatText() ||
+    ""
+  ).toString();
 
   await message.update({
-    content: createMessage(title, colors, createResult(rolledValue, resultText, colors.bg, isCrit))
+    content: createMessage(
+      title,
+      colors,
+      createResult(rolledValue, resultText, colors.bg, isCrit)
+    ),
   });
 }
 
@@ -52,41 +70,47 @@ async function rollTable(table: RollTable, target: HTMLElement): Promise<void> {
 
     (target as HTMLButtonElement).disabled = true;
     target.style.opacity = "0.7";
+    target.textContent = "🎲 Rolling...";
+
+    await showDiceAnimation(roll);
     target.textContent = "✓ Rolled!";
 
-    const tempMessage = await roll.toMessage();
-
-    setTimeout(async () => {
-      try {
-        await executeTableRoll(roll, table, target, tempMessage);
-      } catch (error) {
-        console.error(`[${MODULE_ID}] Error executing table roll:`, error);
-        ui.notifications.error("Failed to process table result");
-      }
-    }, 2500);
+    await executeTableRoll(roll, table, target, null);
   } catch (error) {
-    console.error(`[${MODULE_ID}] Error rolling table:`, error);
     ui.notifications.error("Failed to roll table");
+
+    (target as HTMLButtonElement).disabled = false;
+    target.style.opacity = "1";
+    target.textContent = `🎲 Roll ${(table as any).name || "Table"}`;
   }
 }
 
 export function setupChatListeners(): void {
-  document.addEventListener("click", async (event) => {
+  const clickHandler = async (event: Event) => {
     const target = event.target as HTMLElement;
     if (!target?.classList?.contains("crit-fumble-roll-btn")) return;
 
-    const chatMessage = target.closest(".message");
-    const messageId = (chatMessage as HTMLElement)?.dataset?.messageId;
-    const message = (game as any).messages?.get(messageId);
-    const rollData = analyzeRoll(message);
-    
-    if (rollData && !checkButtonPermission(rollData, game.user.id)) {
-      ui.notifications.warn(rollData.actor ? "Only the character owner or GM can roll this table" : "Permission denied");
-      return;
-    }
-
     event.preventDefault();
     event.stopPropagation();
+
+    const chatMessage = target.closest(".message") as HTMLElement;
+    if (!chatMessage) return;
+
+    const messageId = chatMessage.dataset?.messageId;
+    if (!messageId) return;
+
+    const message = (game as any).messages?.get(messageId);
+    if (!message) return;
+
+    const rollData = analyzeRoll(message);
+    if (rollData && !checkButtonPermission(rollData, game.user.id)) {
+      ui.notifications.warn(
+        rollData.actor
+          ? "Only the character owner or GM can roll this table"
+          : "Permission denied"
+      );
+      return;
+    }
 
     const tableUuid = target.dataset.tableUuid;
     if (!tableUuid) {
@@ -95,15 +119,19 @@ export function setupChatListeners(): void {
     }
 
     try {
-      const table = await fromUuid(tableUuid) as RollTable;
+      const table = (await fromUuid(tableUuid)) as RollTable;
       if (table?.documentName === "RollTable") {
         await rollTable(table, target);
       } else {
         ui.notifications.error("Invalid table or not a RollTable");
       }
     } catch (error) {
-      console.error(`[${MODULE_ID}] Error with button click:`, error);
       ui.notifications.error("Failed to roll table");
     }
-  });
+  };
+
+  document.addEventListener("click", clickHandler);
+
+  // Store reference for cleanup
+  (globalThis as any).critFumbleClickHandler = clickHandler;
 }

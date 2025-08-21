@@ -2,8 +2,8 @@
   "id": "critically-fumbled",
   "title": "Critically Fumbled",
   "description": "Detects critical hits and fumbles for attacks, saves, and ability checks and rolls configured tables.",
-  "version": "1.0.0",
-  "authors": [{ "name": "Zawkey" }],
+  "version": "1.1.0",
+  "authors": [{ "name": "Zawkey2412" }],
   "compatibility": {
     "minimum": "13",
     "verified": "13"

@@ -1,5 +1,6 @@
 import type { AttackCategory, Colors, RollData } from "../types/index.js";
 
+
 const ROLL_TYPES: Record<AttackCategory, string> = {
   save: "saving throw",
   ability: "ability check",
@@ -7,37 +8,53 @@ const ROLL_TYPES: Record<AttackCategory, string> = {
   ranged: "ranged attack",
   spell: "spell attack",
   manual: "manual roll",
-};
+} as const;
+
+const COLORS = {
+  CRIT: { border: "#4CAF50", bg: "76,175,80" },
+  FUMBLE: { border: "#f72525ff", bg: "255,107,107" },
+} as const;
+
+const ROLL_COLORS = {
+  CRIT: "#008000",
+  FUMBLE: "#FF0000",
+} as const;
+
+const ACTIONS = {
+  save: { crit: "critically succeeded on", fumble: "critically failed" },
+  ability: { crit: "critically succeeded on", fumble: "critically failed" },
+  attack: { crit: "critically hit", fumble: "fumbled" },
+} as const;
 
 export function getColors(isCrit: boolean): Colors {
-  return {
-    border: isCrit ? "#4CAF50" : "#f72525ff",
-    bg: isCrit ? "76,175,80" : "255,107,107",
-  };
+  return isCrit ? COLORS.CRIT : COLORS.FUMBLE;
+}
+
+function getDisplayName(rollData: RollData): string {
+  if (rollData.category === "manual") {
+    return (game.user as any)?.name || rollData.speaker?.alias || "Someone";
+  }
+  return rollData.actor?.name || rollData.speaker?.alias || "Someone";
+}
+
+function isAbilityOrSave(category: AttackCategory): boolean {
+  return category === "save" || category === "ability";
 }
 
 export function createTitle(rollData: RollData): string {
-  const name = rollData.speaker?.alias || "Someone";
+  const displayName = getDisplayName(rollData);
 
+  
   if (rollData.category === "manual" && rollData.dieInfo) {
-    return `${name} rolled ${rollData.dieInfo.value} out of d${rollData.dieInfo.faces} on ${ROLL_TYPES.manual}!`;
+    return `${displayName} rolled ${rollData.dieInfo.value} out of d${rollData.dieInfo.faces} on ${ROLL_TYPES.manual}!`;
   }
 
-  const action =
-    rollData.category === "save" || rollData.category === "ability"
-      ? rollData.isCrit
-        ? "critically succeeded on"
-        : "critically failed"
-      : rollData.isCrit
-      ? "critically hit"
-      : "fumbled";
+  const isAbilitySave = isAbilityOrSave(rollData.category);
+  const actionType = isAbilitySave ? ACTIONS.save : ACTIONS.attack;
+  const action = rollData.isCrit ? actionType.crit : actionType.fumble;
+  const preposition = isAbilitySave ? "" : "with";
 
-  const preposition =
-    rollData.category === "save" || rollData.category === "ability"
-      ? ""
-      : "with";
-
-  return `${name} ${action} ${preposition} ${
+  return `${displayName} ${action} ${preposition} ${
     ROLL_TYPES[rollData.category]
   }!`.replace(/\s+/g, " ");
 }
@@ -59,7 +76,8 @@ export function createResult(
   bgColor: string,
   isCrit: boolean
 ): string {
-  const rollColor = isCrit ? "#008000" : "#FF0000";
+  const rollColor = isCrit ? ROLL_COLORS.CRIT : ROLL_COLORS.FUMBLE;
+
   return `<div style="background: rgba(${bgColor}, 0.1); padding: 10px; margin: 5px; border-radius: 5px;">
     <p style="text-align: center; margin: 5px 0;"><strong>Rolled</strong></p>
     <h4 style="text-align: center; margin: 5px 0; color: ${rollColor};"><strong>${rolledValue}</strong></h4>

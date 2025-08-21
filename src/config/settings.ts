@@ -9,18 +9,6 @@ const SETTINGS = {
       default: false,
     },
     {
-      key: "autoRollPlayers",
-      name: "Auto-Roll for Players",
-      hint: "Automatically roll tables for player rolls instead of showing a button",
-      default: false,
-    },
-    {
-      key: "autoRollNPCs",
-      name: "Auto-Roll for NPCs",
-      hint: "Automatically roll tables for NPC rolls instead of showing a button",
-      default: true,
-    },
-    {
       key: "checkSaves",
       name: "Check Saving Throws",
       hint: "Also trigger on natural 1s and 20s for saving throws",
@@ -88,7 +76,6 @@ export function registerSettings(): void {
       default: defaultValue,
     });
   });
-
   SETTINGS.table.forEach((key) => {
     game.settings.register(MODULE_ID, key, {
       name: formatTableName(key),
