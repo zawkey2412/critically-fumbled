@@ -1,0 +1,38 @@
+{
+  "crit-fumble-tables-5e": {
+    "settings": {
+      "playersOnly": {
+        "name": "Players Only",
+        "hint": "Only trigger tables for player-owned actors"
+      },
+      "autoRollPlayers": {
+        "name": "Auto-Roll for Players",
+        "hint": "Automatically roll tables for player rolls instead of showing a button"
+      },
+      "autoRollNPCs": {
+        "name": "Auto-Roll for NPCs",
+        "hint": "Automatically roll tables for NPC rolls instead of showing a button"
+      },
+      "checkSaves": {
+        "name": "Check Saving Throws",
+        "hint": "Also trigger on natural 1s and 20s for saving throws"
+      },
+      "checkAbility": {
+        "name": "Check Ability Checks",
+        "hint": "Also trigger on natural 1s and 20s for ability checks"
+      },
+      "checkManualRolls": {
+        "name": "Check Manual Rolls",
+        "hint": "Also trigger on min/max values for manual dice rolls (no character)"
+      },
+      "manualCrit": {
+        "name": "Manual Roll Critical Table UUID",
+        "hint": "UUID of the RollTable for manual roll maximum values"
+      },
+      "manualFumble": {
+        "name": "Manual Roll Fumble Table UUID",
+        "hint": "UUID of the RollTable for manual roll minimum values"
+      }
+    }
+  }
+}

@@ -1,0 +1,35 @@
+{
+  "id": "critically-fumbled",
+  "title": "Critically Fumbled",
+  "description": "Detects critical hits and fumbles for attacks, saves, and ability checks and rolls configured tables.",
+  "version": "1.0.0",
+  "authors": [{ "name": "Zawkey" }],
+  "compatibility": {
+    "minimum": "13",
+    "verified": "13"
+  },
+  "relationships": {
+    "requires": [
+      {
+        "id": "midi-qol",
+        "type": "module",
+        "manifest": "https://github.com/tposney/midi-qol/releases/latest/download/module.json"
+      }
+    ]
+  },
+  "esmodules": ["dist/main.js"],
+  "packs": [],
+  "languages": [
+    {
+      "lang": "en",
+      "name": "English",
+      "path": "lang/en.json"
+    }
+  ],
+  "url": "https://github.com/zawkey24/critically-fumbled",
+  "manifest": "https://raw.githubusercontent.com/zawkey2412/critically-fumbled/main/module.json",
+  "download": "https://github.com/zawkey2412/critically-fumbled/releases/latest/download/module.zip",
+  "license": "MIT",
+  "bugs": "https://github.com/zawkey2412/critically-fumbled/issues",
+  "changelog": "https://github.com/zawkey2412/critically-fumbled/releases"
+}
