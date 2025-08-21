@@ -9,7 +9,6 @@ export async function onChatMessage(message: any): Promise<void> {
     
     if (!checkPermission(rollData, game.user.id)) return;
     
-    // For manual rolls, only the message creator should handle it
     const messageUserId = message.author?.id || message.user?.id || message.user;
     if (!rollData.actor && messageUserId !== game.user.id) return;
     await processRoll(rollData);

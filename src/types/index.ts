@@ -1,4 +1,10 @@
-export type AttackCategory = "melee" | "ranged" | "spell" | "save" | "ability" | "manual";
+export type AttackCategory =
+  | "melee"
+  | "ranged"
+  | "spell"
+  | "save"
+  | "ability"
+  | "manual";
 
 export interface RollData {
   actor: any;
@@ -13,4 +19,12 @@ export interface RollData {
 export interface Colors {
   border: string;
   bg: string;
+}
+
+export interface RollTableDrawParams {
+  category: AttackCategory;
+  isCrit: boolean;
+  isFumble: boolean;
+  speaker: any;
+  dieInfo?: { value: number; faces: number };
 }
